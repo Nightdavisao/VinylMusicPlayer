@@ -1,0 +1,8 @@
+<resources>
+  <style name="Theme.VinylMusicPlayer.Light.NoActionBar" >
+  <item name="windowActionBar">false</item>
+  <item name="windowNoTitle">true</item>
+</style>
+  <style name="Theme.VinylMusicPlayer.Light.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+  <style name="Theme.VinylMusicPlayer.Light.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+</resources>

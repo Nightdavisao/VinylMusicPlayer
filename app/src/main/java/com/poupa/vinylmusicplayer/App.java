@@ -43,7 +43,7 @@ public class App extends MultiDexApplication {
         }
 
         // setup discography
-        discography = new Discography();
+        discography = new Discography(context);
     }
 
     public static App getInstance() {

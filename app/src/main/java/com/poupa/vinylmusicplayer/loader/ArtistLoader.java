@@ -31,7 +31,7 @@ public class ArtistLoader {
 
         ArrayList<Artist> artists = new ArrayList<>();
         for (Artist artist : Discography.getInstance().getAllArtists()) {
-            final String strippedArtist = StringUtil.stripAccent(artist.getName().toLowerCase());
+            final String strippedArtist = StringUtil.unicodeNormalize(StringUtil.stripAccent(artist.getName().toLowerCase()));
             if (strippedArtist.contains(strippedQuery)) {
                 artists.add(artist);
             }

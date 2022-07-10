@@ -1,35 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="com.poupa.vinylmusicplayer"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.poupa.vinylmusicplayer">
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.BROADCAST_STICKY" />
-    <uses-permission android:name="android.permission.WRITE_SETTINGS"
+    <uses-permission
+        android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
-        android:name="com.poupa.vinylmusicplayer.App"
+        android:name=".App"
         android:allowBackup="true"
+        android:fullBackupOnly="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
+        android:resizeableActivity="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.VinylMusicPlayer.Light"
-        android:resizeableActivity="true"
-        android:requestLegacyExternalStorage="true"
-        tools:ignore="UnusedAttribute"
-        android:fullBackupOnly="true">
-        <activity android:name="com.poupa.vinylmusicplayer.ui.activities.MainActivity"
-            android:theme="@style/SplashTheme"
+        tools:ignore="UnusedAttribute">
+        <activity
+            android:name=".ui.activities.MainActivity"
+            android:exported="true"
             android:label="@string/app_short_name"
-            android:exported="true">
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.MUSIC_PLAYER" />
@@ -100,50 +105,50 @@
                 <data android:mimeType="vnd.android.cursor.dir/audio" />
             </intent-filter>
         </activity>
-        <activity android:name="com.poupa.vinylmusicplayer.ui.activities.AlbumDetailActivity" />
-        <activity android:name="com.poupa.vinylmusicplayer.ui.activities.ArtistDetailActivity" />
-        <activity android:name="com.poupa.vinylmusicplayer.ui.activities.GenreDetailActivity" />
-        <activity android:name="com.poupa.vinylmusicplayer.ui.activities.PlaylistDetailActivity" />
+        <activity android:name=".ui.activities.AlbumDetailActivity" />
+        <activity android:name=".ui.activities.ArtistDetailActivity" />
+        <activity android:name=".ui.activities.GenreDetailActivity" />
+        <activity android:name=".ui.activities.PlaylistDetailActivity" />
         <activity
-            android:name="com.poupa.vinylmusicplayer.ui.activities.tageditor.SongTagEditorActivity"
+            android:name=".ui.activities.tageditor.SongTagEditorActivity"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name="com.poupa.vinylmusicplayer.ui.activities.tageditor.AlbumTagEditorActivity"
+            android:name=".ui.activities.tageditor.AlbumTagEditorActivity"
             android:windowSoftInputMode="adjustResize" />
-        <activity android:name="com.poupa.vinylmusicplayer.ui.activities.SearchActivity" />
+        <activity android:name=".ui.activities.SearchActivity" />
         <activity
-            android:name="com.poupa.vinylmusicplayer.ui.activities.SettingsActivity"
+            android:name=".ui.activities.SettingsActivity"
             android:label="@string/action_settings" />
         <activity
-            android:name="com.poupa.vinylmusicplayer.ui.activities.AboutActivity"
+            android:name=".ui.activities.AboutActivity"
             android:label="@string/action_about" />
         <activity
-            android:name="com.poupa.vinylmusicplayer.ui.activities.intro.AppIntroActivity"
+            android:name=".ui.activities.intro.AppIntroActivity"
             android:label="@string/intro_label"
             android:theme="@style/Theme.Intro" />
         <activity
-            android:name=".ui.activities.saf.SAFGuideActivity"
-            android:theme="@style/Theme.Intro"/>
-        <activity
-            android:name="com.poupa.vinylmusicplayer.ui.activities.bugreport.BugReportActivity"
+            android:name=".ui.activities.bugreport.BugReportActivity"
             android:label="@string/report_an_issue" />
         <activity
-            android:name="com.poupa.vinylmusicplayer.appshortcuts.AppShortcutLauncherActivity"
+            android:name=".appshortcuts.AppShortcutLauncherActivity"
             android:launchMode="singleInstance"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+        <activity android:name=".ui.activities.GrantAppPermissionsActivity" />
+        <activity android:name=".ui.activities.FolderChooserActivity"
+            android:theme="@style/Theme.VinylMusicPlayer.Base"/>
 
         <service
-            android:name="com.poupa.vinylmusicplayer.service.MusicService"
+            android:name=".service.MusicService"
             android:enabled="true"
-            android:label="@string/app_name"
-            android:exported="true">
+            android:exported="true"
+            android:label="@string/app_name">
             <intent-filter>
-                <action android:name="android.media.browse.MediaBrowserService"/>
+                <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
 
-
-        <receiver android:name="com.poupa.vinylmusicplayer.service.MediaButtonIntentReceiver"
+        <receiver
+            android:name=".service.MediaButtonIntentReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
@@ -155,10 +160,9 @@
             android:value="2.1" />
         <meta-data
             android:name="com.lge.support.SPLIT_WINDOW"
-            android:value="true" />
-
-        <!-- Widgets -->
-        <receiver android:name="com.poupa.vinylmusicplayer.appwidgets.BootReceiver"
+            android:value="true" /> <!-- Widgets -->
+        <receiver
+            android:name=".appwidgets.BootReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -166,7 +170,7 @@
             </intent-filter>
         </receiver>
         <receiver
-            android:name="com.poupa.vinylmusicplayer.appwidgets.AppWidgetBig"
+            android:name=".appwidgets.AppWidgetBig"
             android:exported="false"
             android:label="@string/app_widget_big_name">
             <intent-filter>
@@ -178,7 +182,7 @@
                 android:resource="@xml/app_widget_big_info" />
         </receiver>
         <receiver
-            android:name="com.poupa.vinylmusicplayer.appwidgets.AppWidgetClassic"
+            android:name=".appwidgets.AppWidgetClassic"
             android:exported="false"
             android:label="@string/app_widget_classic_name">
             <intent-filter>
@@ -190,7 +194,7 @@
                 android:resource="@xml/app_widget_classic_info" />
         </receiver>
         <receiver
-            android:name="com.poupa.vinylmusicplayer.appwidgets.AppWidgetSmall"
+            android:name=".appwidgets.AppWidgetSmall"
             android:exported="false"
             android:label="@string/app_widget_small_name">
             <intent-filter>
@@ -202,7 +206,7 @@
                 android:resource="@xml/app_widget_small_info" />
         </receiver>
         <receiver
-            android:name="com.poupa.vinylmusicplayer.appwidgets.AppWidgetCard"
+            android:name=".appwidgets.AppWidgetCard"
             android:exported="false"
             android:label="@string/app_widget_card_name">
             <intent-filter>
@@ -222,18 +226,16 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
-        </provider>
-        <!-- Android Auto -->
+        </provider> <!-- Android Auto -->
         <meta-data
             android:name="com.google.android.gms.car.application"
-            android:resource="@xml/automotive_app_desc"/>
+            android:resource="@xml/automotive_app_desc" />
         <meta-data
             android:name="com.google.android.gms.car.application.theme"
             android:resource="@style/CarTheme" />
         <meta-data
             android:name="com.google.android.gms.car.notification.SmallIcon"
-            android:resource="@drawable/ic_notification"/>
-
+            android:resource="@drawable/ic_notification" />
     </application>
 
 </manifest>

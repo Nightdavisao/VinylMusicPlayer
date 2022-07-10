@@ -45,14 +45,18 @@ public class Discography implements MusicServiceEventListener {
     private final DB database;
     private final MemCache cache;
 
+    private Context applicationContext = null;
+    private TagExtractor tagExtractor = null;
     private MainActivity mainActivity = null;
     private Handler mainActivityTaskQueue = null;
     private final String TASK_QUEUE_COALESCENCE_TOKEN = "Discography.triggerSyncWithMediaStore";
     private final Collection<Runnable> changedListeners = new LinkedList<>();
 
-    public Discography() {
+    public Discography(Context context) {
+        applicationContext = context;
         database = new DB();
         cache = new MemCache();
+        tagExtractor = new TagExtractor(applicationContext);
 
         fetchAllSongs();
     }
@@ -259,21 +263,8 @@ public class Discography implements MusicServiceEventListener {
             }
 
             if (!cacheOnly) {
-                TagExtractor.extractTags(song);
+                tagExtractor.extractTags(song);
             }
-
-            Consumer<List<String>> normNames = (@NonNull List<String> names) -> {
-                List<String> normalized = new ArrayList<>();
-                for (String name : names) {
-                    normalized.add(StringUtil.unicodeNormalize(name));
-                }
-                names.clear(); names.addAll(normalized);
-            };
-            normNames.accept(song.albumArtistNames);
-            normNames.accept(song.artistNames);
-            song.albumName = StringUtil.unicodeNormalize(song.albumName);
-            song.title = StringUtil.unicodeNormalize(song.title);
-            song.genre = StringUtil.unicodeNormalize(song.genre);
 
             // Replace genre numerical ID3v1 values by textual ones
             try {

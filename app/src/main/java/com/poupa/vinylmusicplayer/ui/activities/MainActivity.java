@@ -1,22 +1,27 @@
 package com.poupa.vinylmusicplayer.ui.activities;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
@@ -74,11 +79,14 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setDrawUnderStatusbar();
-
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
-            navigationView.setFitsSystemWindows(false); // for header to go below statusbar
+        Boolean isAllFilesPermGranted = Build.VERSION.SDK_INT < Build.VERSION_CODES.R || Environment.isExternalStorageManager();
+        Boolean isLegacyPermGranted = ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        if (!(isAllFilesPermGranted && isLegacyPermGranted)) {
+            Intent i = new Intent(this, GrantAppPermissionsActivity.class);
+            startActivity(i);
         }
+        setDrawUnderStatusbar();
 
         setUpDrawerLayout();
 
@@ -88,9 +96,6 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
             restoreCurrentFragment();
         }
 
-        if (!checkShowIntro()) {
-            showChangelog();
-        }
 
         final Discography discog = Discography.getInstance();
         discog.startService(this);
@@ -176,10 +181,12 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
             } else if (itemId == R.id.nav_folders) {
                 new Handler().postDelayed(() -> setMusicChooser(FOLDERS), 200);
             } else if (itemId == R.id.action_scan) {
-                new Handler().postDelayed(() -> {
-                    ScanMediaFolderChooserDialog dialog = ScanMediaFolderChooserDialog.create();
-                    dialog.show(getSupportFragmentManager(), "SCAN_MEDIA_FOLDER_CHOOSER");
-                }, 200);
+                //new Handler().postDelayed(() -> {
+                //    ScanMediaFolderChooserDialog dialog = ScanMediaFolderChooserDialog.create();
+                //    dialog.show(getSupportFragmentManager(), "SCAN_MEDIA_FOLDER_CHOOSER");
+                //}, 200);
+                Intent i = new Intent(this, FolderChooserActivity.class);
+                startActivity(i);
             } else if (itemId == R.id.action_reset_discography) {
                 new MaterialDialog.Builder(this)
                         .title(R.string.reset_discography)

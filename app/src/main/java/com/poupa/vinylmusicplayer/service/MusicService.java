@@ -388,7 +388,7 @@ public class MusicService extends MediaBrowserServiceCompat implements SharedPre
     }
 
     public synchronized void restoreQueuesAndPositionIfNecessary() {
-        if (!queuesRestored && playingQueue.size()==0) {
+        if (!queuesRestored && playingQueue.size() == 0) {
             ArrayList<IndexedSong> restoredQueue = MusicPlaybackQueueStore.getInstance(this).getSavedPlayingQueue();
             ArrayList<IndexedSong> restoredOriginalQueue = MusicPlaybackQueueStore.getInstance(this).getSavedOriginalPlayingQueue();
             int restoredPosition = PreferenceManager.getDefaultSharedPreferences(this).getInt(SAVED_POSITION, -1);
@@ -450,7 +450,9 @@ public class MusicService extends MediaBrowserServiceCompat implements SharedPre
     }
 
     public boolean isPlaying(@NonNull Song song) {
-        if (!isPlaying()) {return false;}
+        if (!isPlaying()) {
+            return false;
+        }
 
         return getCurrentIndexedSong().isQuickEqual(song);
     }
@@ -473,8 +475,7 @@ public class MusicService extends MediaBrowserServiceCompat implements SharedPre
             playingQueue.setCurrentPosition(position);
             boolean prepared = openCurrent();
             if (prepared) prepareNextImpl();
-            notifyChange(META_CHANGED);
-            notHandledMetaChangedForCurrentTrack = false;
+            updateMediaSessionMetaData();
             return prepared;
         }
     }
@@ -545,13 +546,14 @@ public class MusicService extends MediaBrowserServiceCompat implements SharedPre
     };
 
     public void updateMediaSessionPlaybackState() {
+        boolean isPlaying = isPlaying();
+        Log.d(TAG, "isPlaying: " + isPlaying);
         PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder()
                 .setActions(MEDIA_SESSION_ACTIONS)
-                .setState(isPlaying() ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED,
+                .setState(isPlaying ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED,
                         getSongProgressMillis(), 1);
 
         setCustomAction(stateBuilder);
-
         mediaSession.setPlaybackState(stateBuilder.build());
     }
 
@@ -593,43 +595,35 @@ public class MusicService extends MediaBrowserServiceCompat implements SharedPre
                 .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, song.duration)
                 .putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, getPosition() + 1)
                 .putLong(MediaMetadataCompat.METADATA_KEY_YEAR, song.year)
-                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, null);
+                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, null)
+                .putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, playingQueue.size());
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            metaData.putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, playingQueue.size());
-        }
+        GlideRequest<Bitmap> request = GlideApp.with(MusicService.this)
+                .asBitmap()
+                .load(VinylGlideExtension.getSongModel(song))
+                .transition(VinylGlideExtension.getDefaultTransition())
+                .songOptions(song);
 
         if (PreferenceUtil.getInstance().albumArtOnLockscreen()) {
-            final Point screenSize = Util.getScreenSize(MusicService.this);
-
-            GlideRequest<Bitmap> request = GlideApp.with(MusicService.this)
-                    .asBitmap()
-                    .load(VinylGlideExtension.getSongModel(song))
-                    .transition(VinylGlideExtension.getDefaultTransition())
-                    .songOptions(song);
-            if (PreferenceUtil.getInstance().blurredAlbumArt()) {
-                request.transform(new BlurTransformation.Builder(MusicService.this).build());
-            }
-            runOnUiThread(new Runnable() {
+            request.into(new VinylSimpleTarget<Bitmap>() {
                 @Override
-                public void run() {
-                    request.into(new VinylSimpleTarget<Bitmap>(screenSize.x, screenSize.y) {
-                        @Override
-                        public void onLoadFailed(@Nullable Drawable errorDrawable) {
-                            super.onLoadFailed(errorDrawable);
-                            mediaSession.setMetadata(metaData.build());
-                        }
+                public void onLoadFailed(@Nullable Drawable errorDrawable) {
+                    super.onLoadFailed(errorDrawable);
+                    mediaSession.setMetadata(metaData.build());
+                    updateMediaSessionPlaybackState();
+                }
 
-                        @Override
-                        public void onResourceReady(@NonNull Bitmap resource, Transition<? super Bitmap> glideAnimation) {
-                            metaData.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, copy(resource));
-                            mediaSession.setMetadata(metaData.build());
-                        }
-                    });
+                @Override
+                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                    super.onResourceReady(resource, transition);
+                    metaData.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, resource);
+                    mediaSession.setMetadata(metaData.build());
+                    updateMediaSessionPlaybackState();
                 }
             });
         } else {
             mediaSession.setMetadata(metaData.build());
+            updateMediaSessionPlaybackState();
         }
     }
 
@@ -651,7 +645,7 @@ public class MusicService extends MediaBrowserServiceCompat implements SharedPre
     }
 
     public Song getCurrentSong() {
-        return (Song)getCurrentIndexedSong();
+        return (Song) getCurrentIndexedSong();
     }
 
     public IndexedSong getCurrentIndexedSong() {
@@ -659,7 +653,7 @@ public class MusicService extends MediaBrowserServiceCompat implements SharedPre
     }
 
     public Song getSongAt(int position) {
-        return (Song)getIndexedSongAt(position);
+        return (Song) getIndexedSongAt(position);
     }
 
     public IndexedSong getIndexedSongAt(int position) {
@@ -846,25 +840,26 @@ public class MusicService extends MediaBrowserServiceCompat implements SharedPre
     public void play() {
         synchronized (this) {
             if (requestFocus()) {
-                if (!playback.isPlaying()) {
-                    if (!playback.isInitialized()) {
-                        playSongAt(getPosition());
-                    } else {
-                        playback.start();
-                        if (!becomingNoisyReceiverRegistered) {
-                            registerReceiver(becomingNoisyReceiver, becomingNoisyReceiverIntentFilter);
-                            becomingNoisyReceiverRegistered = true;
-                        }
-                        if (notHandledMetaChangedForCurrentTrack) {
-                            handleChangeInternal(META_CHANGED);
-                            notHandledMetaChangedForCurrentTrack = false;
-                        }
-                        notifyChange(PLAY_STATE_CHANGED);
-
-                        // fixes a bug where the volume would stay ducked because the AudioManager.AUDIOFOCUS_GAIN event is not sent
-                        playerHandler.removeMessages(DUCK);
-                        playerHandler.sendEmptyMessage(UNDUCK);
+                if (playback.isPlaying()) {
+                    return;
+                }
+                if (!playback.isInitialized()) {
+                    playSongAt(getPosition());
+                } else {
+                    playback.start();
+                    if (!becomingNoisyReceiverRegistered) {
+                        registerReceiver(becomingNoisyReceiver, becomingNoisyReceiverIntentFilter);
+                        becomingNoisyReceiverRegistered = true;
                     }
+                    if (notHandledMetaChangedForCurrentTrack) {
+                        handleChangeInternal(META_CHANGED);
+                        notHandledMetaChangedForCurrentTrack = false;
+                    }
+                    notifyChange(PLAY_STATE_CHANGED);
+
+                    // fixes a bug where the volume would stay ducked because the AudioManager.AUDIOFOCUS_GAIN event is not sent
+                    playerHandler.removeMessages(DUCK);
+                    playerHandler.sendEmptyMessage(UNDUCK);
                 }
             } else {
                 Toast.makeText(this, getResources().getString(R.string.audio_focus_denied), Toast.LENGTH_SHORT).show();
@@ -1004,7 +999,6 @@ public class MusicService extends MediaBrowserServiceCompat implements SharedPre
             case META_CHANGED:
                 updateNotification();
                 updateMediaSessionMetaData();
-                updateMediaSessionPlaybackState();
 
                 savePosition();
                 savePositionInTrack();
@@ -1101,7 +1095,9 @@ public class MusicService extends MediaBrowserServiceCompat implements SharedPre
         @Override
         public void onReceive(final Context context, final Intent intent) {
             final String command = intent.getStringExtra(EXTRA_APP_WIDGET_NAME);
-            if (command == null) {return;}
+            if (command == null) {
+                return;
+            }
 
             final int[] ids = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS);
             switch (command) {
@@ -1136,11 +1132,21 @@ public class MusicService extends MediaBrowserServiceCompat implements SharedPre
 
         // System UI query (Android 11+)
         Predicate<Bundle> isSystemMediaQuery = (hints) -> {
-            if (hints == null) {return false;}
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {return false;}
-            if (hints.getBoolean(BrowserRoot.EXTRA_RECENT)) {return true;}
-            if (hints.getBoolean(BrowserRoot.EXTRA_SUGGESTED)) {return true;}
-            if (hints.getBoolean(BrowserRoot.EXTRA_OFFLINE)) {return true;}
+            if (hints == null) {
+                return false;
+            }
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+                return false;
+            }
+            if (hints.getBoolean(BrowserRoot.EXTRA_RECENT)) {
+                return true;
+            }
+            if (hints.getBoolean(BrowserRoot.EXTRA_SUGGESTED)) {
+                return true;
+            }
+            if (hints.getBoolean(BrowserRoot.EXTRA_OFFLINE)) {
+                return true;
+            }
             return false;
         };
         if (isSystemMediaQuery.test(rootHints)) {

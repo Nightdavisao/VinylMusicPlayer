@@ -2,6 +2,7 @@ package com.poupa.vinylmusicplayer.discog;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.os.Build;
 import android.provider.BaseColumns;
 import android.provider.MediaStore;
 
@@ -86,7 +87,7 @@ public class MediaStoreBridge {
     private static Cursor makeSongCursor(@NonNull final Context context) {
         try {
             return context.getContentResolver().query(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ? MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL) : MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     BASE_PROJECTION,
                     BASE_SELECTION,
                     null,

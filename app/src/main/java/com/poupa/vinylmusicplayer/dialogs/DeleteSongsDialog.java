@@ -20,7 +20,6 @@ import com.poupa.vinylmusicplayer.R;
 import com.poupa.vinylmusicplayer.helper.MusicPlayerRemote;
 import com.poupa.vinylmusicplayer.misc.DialogAsyncTask;
 import com.poupa.vinylmusicplayer.model.Song;
-import com.poupa.vinylmusicplayer.ui.activities.saf.SAFGuideActivity;
 import com.poupa.vinylmusicplayer.util.MusicUtil;
 import com.poupa.vinylmusicplayer.util.SAFUtil;
 
@@ -92,7 +91,6 @@ public class DeleteSongsDialog extends DialogFragment {
         MusicUtil.deleteTracks(getActivity(), songs, safUris, this::dismiss);
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     private void deleteSongsKitkat() {
         if (songsToRemove.size() < 1) {
             dismiss();
@@ -114,10 +112,6 @@ public class DeleteSongsDialog extends DialogFragment {
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
         switch (requestCode) {
-            case SAFGuideActivity.REQUEST_CODE_SAF_GUIDE:
-                SAFUtil.openTreePicker(this);
-                break;
-
             case SAFUtil.REQUEST_SAF_PICK_TREE:
             case SAFUtil.REQUEST_SAF_PICK_FILE:
                 if (deleteSongsTask != null) {
@@ -158,7 +152,7 @@ public class DeleteSongsDialog extends DialogFragment {
                             if (SAFUtil.isSDCardAccessGranted(activity)) {
                                 dialog.deleteSongs(info.songs, null);
                             } else {
-                                dialog.startActivityForResult(new Intent(activity, SAFGuideActivity.class), SAFGuideActivity.REQUEST_CODE_SAF_GUIDE);
+                                SAFUtil.openTreePicker(activity);
                             }
                         } else {
                             dialog.deleteSongsKitkat();

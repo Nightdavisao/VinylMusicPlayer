@@ -31,6 +31,7 @@ import static android.provider.MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI;
 /**
  * @author Karim Abou Zeid (kabouzeid)
  */
+// TODO: use internal application database for storing playlists instead of relying on media store.
 public class PlaylistsUtil {
     private static void notifyChange(@NonNull final Context context, @NonNull Uri uri) {
         context.sendBroadcast(new Intent(MusicService.MEDIA_STORE_CHANGED));

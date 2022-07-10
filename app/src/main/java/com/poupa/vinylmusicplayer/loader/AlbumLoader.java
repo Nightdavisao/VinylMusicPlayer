@@ -31,7 +31,7 @@ public class AlbumLoader {
 
         ArrayList<Album> albums = new ArrayList<>();
         for (Album album : Discography.getInstance().getAllAlbums()) {
-            final String strippedAlbum = StringUtil.stripAccent(album.getTitle().toLowerCase());
+            final String strippedAlbum = StringUtil.unicodeNormalize(StringUtil.stripAccent(album.getTitle().toLowerCase()));
             if (strippedAlbum.contains(strippedQuery)) {
                 albums.add(album);
             }
