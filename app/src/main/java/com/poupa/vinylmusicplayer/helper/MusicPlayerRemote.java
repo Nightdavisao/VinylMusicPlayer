@@ -177,7 +177,7 @@ public class MusicPlayerRemote {
 
     public static void resumePlaying() {
         if (musicService != null) {
-            musicService.play();
+            musicService.resume();
         }
     }
 

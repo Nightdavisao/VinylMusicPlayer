@@ -275,14 +275,18 @@ public class MusicService extends MediaBrowserServiceCompat implements SharedPre
                         if (isPlaying()) {
                             pause();
                         } else {
-                            play();
+                            resume();
                         }
                         break;
                     case ACTION_PAUSE:
                         pause();
                         break;
                     case ACTION_PLAY:
-                        play();
+                        if (!playback.isInitialized()) {
+                            play();
+                        } else {
+                            resume();
+                        }
                         break;
                     case ACTION_PLAY_PLAYLIST:
                         Playlist playlist = intent.getParcelableExtra(INTENT_EXTRA_PLAYLIST);
@@ -475,7 +479,7 @@ public class MusicService extends MediaBrowserServiceCompat implements SharedPre
             playingQueue.setCurrentPosition(position);
             boolean prepared = openCurrent();
             if (prepared) prepareNextImpl();
-            updateMediaSessionMetaData();
+            notHandledMetaChangedForCurrentTrack = true;
             return prepared;
         }
     }
@@ -610,7 +614,6 @@ public class MusicService extends MediaBrowserServiceCompat implements SharedPre
                 public void onLoadFailed(@Nullable Drawable errorDrawable) {
                     super.onLoadFailed(errorDrawable);
                     mediaSession.setMetadata(metaData.build());
-                    updateMediaSessionPlaybackState();
                 }
 
                 @Override
@@ -618,12 +621,10 @@ public class MusicService extends MediaBrowserServiceCompat implements SharedPre
                     super.onResourceReady(resource, transition);
                     metaData.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, resource);
                     mediaSession.setMetadata(metaData.build());
-                    updateMediaSessionPlaybackState();
                 }
             });
         } else {
             mediaSession.setMetadata(metaData.build());
-            updateMediaSessionPlaybackState();
         }
     }
 
@@ -837,6 +838,13 @@ public class MusicService extends MediaBrowserServiceCompat implements SharedPre
         }
     }
 
+    public void resume() {
+        if (!playback.isPlaying()) {
+            play();
+            notifyChange(PLAY_STATE_CHANGED);
+        }
+    }
+
     public void play() {
         synchronized (this) {
             if (requestFocus()) {
@@ -847,19 +855,16 @@ public class MusicService extends MediaBrowserServiceCompat implements SharedPre
                     playSongAt(getPosition());
                 } else {
                     playback.start();
+
                     if (!becomingNoisyReceiverRegistered) {
                         registerReceiver(becomingNoisyReceiver, becomingNoisyReceiverIntentFilter);
                         becomingNoisyReceiverRegistered = true;
                     }
                     if (notHandledMetaChangedForCurrentTrack) {
-                        handleChangeInternal(META_CHANGED);
+                        notifyChange(META_CHANGED);
                         notHandledMetaChangedForCurrentTrack = false;
                     }
-                    notifyChange(PLAY_STATE_CHANGED);
-
-                    // fixes a bug where the volume would stay ducked because the AudioManager.AUDIOFOCUS_GAIN event is not sent
-                    playerHandler.removeMessages(DUCK);
-                    playerHandler.sendEmptyMessage(UNDUCK);
+                    sendChangeInternal(PLAY_STATE_CHANGED);
                 }
             } else {
                 Toast.makeText(this, getResources().getString(R.string.audio_focus_denied), Toast.LENGTH_SHORT).show();
@@ -999,6 +1004,7 @@ public class MusicService extends MediaBrowserServiceCompat implements SharedPre
             case META_CHANGED:
                 updateNotification();
                 updateMediaSessionMetaData();
+                updateMediaSessionPlaybackState();
 
                 savePosition();
                 savePositionInTrack();

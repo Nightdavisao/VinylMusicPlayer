@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,12 +29,14 @@ import com.poupa.vinylmusicplayer.ui.activities.MainActivity;
 import com.poupa.vinylmusicplayer.util.MusicUtil;
 import com.poupa.vinylmusicplayer.util.PreferenceUtil;
 
+import static com.poupa.vinylmusicplayer.service.MusicService.ACTION_QUIT;
 import static com.poupa.vinylmusicplayer.service.MusicService.ACTION_REWIND;
 import static com.poupa.vinylmusicplayer.service.MusicService.ACTION_SKIP;
 import static com.poupa.vinylmusicplayer.service.MusicService.ACTION_TOGGLE_PAUSE;
 import static com.poupa.vinylmusicplayer.service.MusicService.TOGGLE_FAVORITE;
 
 public class PlayingNotificationImpl24 extends PlayingNotification {
+    final String TAG = "PlayingNotifImpl24";
 
     @Override
     public synchronized void update() {
@@ -42,6 +45,7 @@ public class PlayingNotificationImpl24 extends PlayingNotification {
         final Song song = service.getCurrentSong();
 
         final boolean isPlaying = service.isPlaying();
+        Log.d(TAG, "Is the player actually playing? " + isPlaying);
         final boolean isFavorite = MusicUtil.isFavorite(service, song);
         final String text = MusicUtil.getSongInfoString(song);
 
@@ -91,6 +95,10 @@ public class PlayingNotificationImpl24 extends PlayingNotification {
                         NotificationCompat.Action favoriteAction = new NotificationCompat.Action(favButtonResId,
                                 service.getString(R.string.action_toggle_favorite),
                                 retrievePlaybackAction(TOGGLE_FAVORITE));
+                        NotificationCompat.Action dismissAction = new NotificationCompat.Action(R.drawable.ic_close_white_24dp,
+                                service.getString(R.string.notices_close),
+                                retrievePlaybackAction(ACTION_QUIT));
+
                         NotificationCompat.Builder builder = new NotificationCompat.Builder(service, NOTIFICATION_CHANNEL_ID)
                                 .setSmallIcon(R.drawable.ic_notification)
                                 .setLargeIcon(bitmap)
@@ -103,7 +111,8 @@ public class PlayingNotificationImpl24 extends PlayingNotification {
                                 .addAction(previousAction)
                                 .addAction(playPauseAction)
                                 .addAction(nextAction)
-                                .addAction(favoriteAction);
+                                .addAction(favoriteAction)
+                                .addAction(dismissAction);
 
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                             builder.setStyle(new MediaStyle().setMediaSession(service.getMediaSession().getSessionToken()).setShowActionsInCompactView(0, 1, 2))
