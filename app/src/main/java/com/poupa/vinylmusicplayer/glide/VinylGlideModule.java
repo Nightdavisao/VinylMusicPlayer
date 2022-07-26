@@ -9,8 +9,6 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.Registry;
 import com.bumptech.glide.annotation.GlideModule;
 import com.bumptech.glide.module.AppGlideModule;
-import com.poupa.vinylmusicplayer.glide.artistimage.ArtistImage;
-import com.poupa.vinylmusicplayer.glide.artistimage.ArtistImageLoader;
 import com.poupa.vinylmusicplayer.glide.audiocover.AudioFileCover;
 import com.poupa.vinylmusicplayer.glide.audiocover.AudioFileCoverLoader;
 import com.poupa.vinylmusicplayer.glide.palette.BitmapPaletteTranscoder;
@@ -28,7 +26,6 @@ public class VinylGlideModule extends AppGlideModule {
     public void registerComponents(@NonNull Context context, @NonNull Glide glide,
                                    @NonNull Registry registry) {
         registry.append(AudioFileCover.class, InputStream.class, new AudioFileCoverLoader.Factory());
-        registry.append(ArtistImage.class, InputStream.class, new ArtistImageLoader.Factory(context));
         registry.register(Bitmap.class, BitmapPaletteWrapper.class, new BitmapPaletteTranscoder());
     }
 

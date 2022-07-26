@@ -148,7 +148,6 @@ public abstract class AbsTagEditorActivity extends AbsBaseActivity {
     private void setUpImageView() {
         loadCurrentImage();
         final CharSequence[] items = new CharSequence[]{
-                getString(R.string.download_from_last_fm),
                 getString(R.string.pick_from_local_storage),
                 getString(R.string.web_search),
                 getString(R.string.remove_cover)
@@ -159,15 +158,12 @@ public abstract class AbsTagEditorActivity extends AbsBaseActivity {
                 .itemsCallback((dialog, view, which, text) -> {
                     switch (which) {
                         case 0:
-                            getImageFromLastFM();
-                            break;
-                        case 1:
                             startImagePicker();
                             break;
-                        case 2:
+                        case 1:
                             searchImageOnWeb();
                             break;
-                        case 3:
+                        case 2:
                             deleteImage();
                             break;
                     }
@@ -181,8 +177,6 @@ public abstract class AbsTagEditorActivity extends AbsBaseActivity {
     }
 
     protected abstract void loadCurrentImage();
-
-    protected abstract void getImageFromLastFM();
 
     protected abstract void searchImageOnWeb();
 
