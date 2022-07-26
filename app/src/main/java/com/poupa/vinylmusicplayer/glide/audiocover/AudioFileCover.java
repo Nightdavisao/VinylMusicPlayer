@@ -2,8 +2,6 @@ package com.poupa.vinylmusicplayer.glide.audiocover;
 
 import androidx.annotation.Nullable;
 
-import com.poupa.vinylmusicplayer.glide.artistimage.ArtistImage;
-
 /**
  * @author Karim Abou Zeid (kabouzeid)
  */

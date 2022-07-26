@@ -15,7 +15,6 @@ import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.signature.MediaStoreSignature;
 import com.poupa.vinylmusicplayer.App;
 import com.poupa.vinylmusicplayer.R;
-import com.poupa.vinylmusicplayer.glide.artistimage.ArtistImage;
 import com.poupa.vinylmusicplayer.glide.audiocover.AudioFileCover;
 import com.poupa.vinylmusicplayer.glide.palette.BitmapPaletteWrapper;
 import com.poupa.vinylmusicplayer.model.Artist;
@@ -71,19 +70,7 @@ public final class VinylGlideExtension {
     }
 
     public static Object getArtistModel(Artist artist) {
-        return getArtistModel(artist, CustomArtistImageUtil.getInstance(App.getInstance()).hasCustomArtistImage(artist), false);
-    }
-
-    public static Object getArtistModel(Artist artist, boolean forceDownload) {
-        return getArtistModel(artist, CustomArtistImageUtil.getInstance(App.getInstance()).hasCustomArtistImage(artist), forceDownload);
-    }
-
-    public static Object getArtistModel(Artist artist, boolean hasCustomImage, boolean forceDownload) {
-        if (!hasCustomImage) {
-            return new ArtistImage(artist.getName(), forceDownload);
-        } else {
-            return CustomArtistImageUtil.getFile(artist);
-        }
+        return CustomArtistImageUtil.getFile(artist);
     }
 
     public static Object getSongModel(Song song) {

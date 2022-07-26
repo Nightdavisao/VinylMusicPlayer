@@ -43,8 +43,6 @@ import com.poupa.vinylmusicplayer.helper.menu.MenuHelper;
 import com.poupa.vinylmusicplayer.interfaces.CabHolder;
 import com.poupa.vinylmusicplayer.interfaces.LoaderIds;
 import com.poupa.vinylmusicplayer.interfaces.PaletteColorHolder;
-import com.poupa.vinylmusicplayer.lastfm.rest.LastFMRestClient;
-import com.poupa.vinylmusicplayer.lastfm.rest.model.LastFmArtist;
 import com.poupa.vinylmusicplayer.loader.ArtistLoader;
 import com.poupa.vinylmusicplayer.misc.SimpleObservableScrollViewCallbacks;
 import com.poupa.vinylmusicplayer.misc.WrappedAsyncTaskLoader;
@@ -220,7 +218,7 @@ public class ArtistDetailActivity extends AbsSlidingMusicPanelActivity implement
     private void loadArtistImage() {
         GlideApp.with(this)
                 .asBitmapPalette()
-                .load(VinylGlideExtension.getArtistModel(artist, forceDownload))
+                .load(VinylGlideExtension.getArtistModel(artist))
                 .transition(VinylGlideExtension.getDefaultTransition())
                 .artistOptions(artist)
                 .dontAnimate()
