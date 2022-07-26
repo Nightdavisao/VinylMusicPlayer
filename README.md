@@ -14,7 +14,7 @@ Check [GitHub Releases](https://github.com/Nightdavisao/VinylMusicPlayer/release
 * ReplayGain
 * SD Card write access (requests all files access if running in Android 11+, if else, it uses SAF)
 * Uses taglib for reading tags from music files
-* [...and more!](https://github.com/AdrienPoupa/VinylMusicPlayer/blob/master/CHANGELOG.md)
+* No internet connectivity
 
 ## TODO
 * Rework the directory picker (at the moment the app uses an outdated library for that)
